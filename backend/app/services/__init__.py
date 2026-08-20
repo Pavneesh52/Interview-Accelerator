@@ -12,6 +12,8 @@ from app.services.storage import storage_service
 from app.services.document_processor import DocumentProcessor
 from app.services.llm import llm_service, LLMProvider
 from app.services.analysis import analysis_service, AnalysisService
+from app.services.interview import interview_service, InterviewService
+from app.services.evaluation import evaluation_service, EvaluationService
 
 __all__ = [
     "verify_password",
@@ -28,4 +30,8 @@ __all__ = [
     "LLMProvider",
     "analysis_service",
     "AnalysisService",
+    "interview_service",
+    "InterviewService",
+    "evaluation_service",
+    "EvaluationService",
 ]

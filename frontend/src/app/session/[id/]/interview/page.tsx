@@ -72,7 +72,7 @@ export default function InterviewPage() {
         setInterview(response.data.interview)
       } else {
         // Start interview
-        const startResponse = await api.post("/interviews", { session_id: sessionId })
+        const startResponse = await api.post("/interviews/start", { session_id: sessionId })
         setInterview(startResponse.data)
       }
     } catch (error) {
@@ -144,13 +144,27 @@ export default function InterviewPage() {
         duration_seconds: 0
       })
       
-      // Fetch updated interview
-      const response = await api.get(`/analysis/sessions/${sessionId}`)
-      setInterview(response.data.interview)
+      // Get next question (handles follow-ups)
+      const nextResponse = await api.post(`/interviews/${interview.id}/next-question`)
+      setInterview(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          questions: [...prev.questions, nextResponse.data],
+          current_question_index: prev.current_question_index + 1,
+          total_questions: prev.total_questions + (nextResponse.data.is_follow_up ? 1 : 0)
+        }
+      })
       setCurrentAnswer("")
       setTranscript("")
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to submit answer", variant: "destructive" })
+    } catch (error: any) {
+      if (error.response?.status === 400 && error.response?.data?.detail === "Interview completed") {
+        // Interview completed, refresh to get evaluation
+        const response = await api.get(`/analysis/sessions/${sessionId}`)
+        setInterview(response.data.interview)
+      } else {
+        toast({ title: "Error", description: "Failed to submit answer", variant: "destructive" })
+      }
     }
   }
 
