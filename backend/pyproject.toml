@@ -29,6 +29,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "structlog>=24.1.0",
     "email-validator>=2.1.0",
+    "livekit-api (>=1.2.0,<2.0.0)",
 ]
 
 [project.optional-dependencies]
