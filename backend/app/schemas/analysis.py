@@ -118,6 +118,20 @@ class AnalysisSessionResponse(BaseModel):
         from_attributes = True
 
 
+class AnalysisSessionCreateResponse(BaseModel):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    jd_id: uuid.UUID
+    resume_id: uuid.UUID
+    status: SessionStatus
+    created_at: datetime
+    updated_at: datetime
+    completed_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+
 class SessionCreate(BaseModel):
     jd_id: uuid.UUID
     resume_id: uuid.UUID

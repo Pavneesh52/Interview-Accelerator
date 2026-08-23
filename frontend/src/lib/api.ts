@@ -1,8 +1,17 @@
 import axios from "axios"
 import { getSession } from "next-auth/react"
 
+// Server-side code (API routes, server components) runs inside the
+// frontend container and must reach the backend via the Docker service
+// name. Client-side code (the browser) must use localhost, since the
+// browser is on the host machine, not inside the Docker network.
+const baseURL =
+  typeof window === "undefined"
+    ? process.env.INTERNAL_API_URL || "http://backend:8000/api/v1"
+    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1",
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },

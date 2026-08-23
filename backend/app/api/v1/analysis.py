@@ -15,6 +15,7 @@ from app.schemas.analysis import (
     ResumeAnalysisResponse,
     JobFitAssessmentResponse,
     AnalysisSessionResponse,
+    AnalysisSessionCreateResponse,
     SessionCreate,
     SessionStatus,
 )
@@ -22,7 +23,7 @@ from app.schemas.analysis import (
 router = APIRouter()
 
 
-@router.post("/sessions", response_model=AnalysisSessionResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/sessions", response_model=AnalysisSessionCreateResponse, status_code=status.HTTP_201_CREATED)
 async def create_analysis_session(
     session_data: SessionCreate,
     db: AsyncSession = Depends(get_db),
@@ -58,10 +59,10 @@ async def create_analysis_session(
     await db.commit()
     await db.refresh(session)
     
-    return AnalysisSessionResponse.from_orm(session)
+    return AnalysisSessionCreateResponse.model_validate(session)
 
 
-@router.get("/sessions", response_model=List[AnalysisSessionResponse])
+@router.get("/sessions", response_model=List[AnalysisSessionCreateResponse])
 async def list_sessions(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_dependency),
@@ -72,7 +73,7 @@ async def list_sessions(
         .order_by(AnalysisSession.created_at.desc())
     )
     sessions = result.scalars().all()
-    return [AnalysisSessionResponse.from_orm(s) for s in sessions]
+    return [AnalysisSessionCreateResponse.model_validate(s) for s in sessions]
 
 
 @router.get("/sessions/{session_id}", response_model=AnalysisSessionResponse)
@@ -81,8 +82,15 @@ async def get_session(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_dependency),
 ):
+    from sqlalchemy.orm import selectinload
     result = await db.execute(
-        select(AnalysisSession).where(
+        select(AnalysisSession)
+        .options(
+            selectinload(AnalysisSession.jd_analysis),
+            selectinload(AnalysisSession.resume_analysis),
+            selectinload(AnalysisSession.job_fit),
+        )
+        .where(
             AnalysisSession.id == session_id,
             AnalysisSession.user_id == current_user.id,
         )
@@ -90,7 +98,7 @@ async def get_session(
     session = result.scalar_one_or_none()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    return AnalysisSessionResponse.from_orm(session)
+    return AnalysisSessionResponse.model_validate(session)
 
 
 @router.post("/sessions/{session_id}/analyze")
@@ -178,6 +186,8 @@ async def run_analysis(
         return {"message": "Analysis completed successfully", "session_id": str(session.id)}
     
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         session.status = SessionStatus.FAILED
         await db.commit()
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
@@ -206,7 +216,7 @@ async def get_jd_analysis(
     if not jd_analysis:
         raise HTTPException(status_code=404, detail="JD analysis not found")
     
-    return JDAnalysisResponse.from_orm(jd_analysis)
+    return JDAnalysisResponse.model_validate(jd_analysis)
 
 
 @router.get("/sessions/{session_id}/resume-analysis", response_model=ResumeAnalysisResponse)
@@ -232,7 +242,7 @@ async def get_resume_analysis(
     if not resume_analysis:
         raise HTTPException(status_code=404, detail="Resume analysis not found")
     
-    return ResumeAnalysisResponse.from_orm(resume_analysis)
+    return ResumeAnalysisResponse.model_validate(resume_analysis)
 
 
 @router.get("/sessions/{session_id}/job-fit", response_model=JobFitAssessmentResponse)
@@ -258,4 +268,4 @@ async def get_job_fit(
     if not job_fit:
         raise HTTPException(status_code=404, detail="Job fit assessment not found")
     
-    return JobFitAssessmentResponse.from_orm(job_fit)
+    return JobFitAssessmentResponse.model_validate(job_fit)

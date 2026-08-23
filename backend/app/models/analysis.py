@@ -20,7 +20,11 @@ class AnalysisSession(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     jd_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("job_descriptions.id", ondelete="CASCADE"), nullable=False)
     resume_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
-    status: Mapped[SessionStatus] = mapped_column(SQLEnum(SessionStatus), default=SessionStatus.PENDING, nullable=False)
+    status: Mapped[SessionStatus] = mapped_column(
+        SQLEnum(SessionStatus, values_callable=lambda x: [str(e.value) for e in x]),
+        default=SessionStatus.PENDING,
+        nullable=False,
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)

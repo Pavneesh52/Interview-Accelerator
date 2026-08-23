@@ -1,16 +1,18 @@
 from datetime import datetime, timedelta
 from typing import Optional
 import uuid
+from fastapi import Depends
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.config import settings
+from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import TokenData
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -74,3 +76,20 @@ def decode_token(token: str) -> Optional[TokenData]:
         return TokenData(user_id=uuid.UUID(user_id), email=email)
     except JWTError:
         return None
+
+
+async def get_current_user_dependency(
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    # Placeholder - in production, extract from JWT token
+    result = await db.execute(select(User).limit(1))
+    user = result.scalar_one_or_none()
+    if not user:
+        # In services/auth.py, replace line 88: 
+        hashed_password = get_password_hash("demo")
+        user = User(email="demo@example.com", hashed_password=hashed_password, full_name="Demo User")
+
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+    return user

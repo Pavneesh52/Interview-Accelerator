@@ -4,7 +4,7 @@ from typing import List
 import uuid
 
 from app.db.session import get_db
-from app.services.auth import get_current_user, get_user_by_id
+from app.services.auth import get_current_user_dependency
 from app.services.storage import storage_service
 from app.services.document_processor import DocumentProcessor
 from app.models.user import User
@@ -22,23 +22,6 @@ from app.schemas.auth import UserResponse
 from app.core.config import settings
 
 router = APIRouter()
-
-
-async def get_current_user_dependency(
-    db: AsyncSession = Depends(get_db),
-    # In real implementation, this would come from JWT token
-) -> User:
-    # Placeholder - in production, extract from JWT
-    # For now, return first user or create demo user
-    from sqlalchemy import select
-    result = await db.execute(select(User).limit(1))
-    user = result.scalar_one_or_none()
-    if not user:
-        user = User(email="demo@example.com", hashed_password="demo", full_name="Demo User")
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-    return user
 
 
 @router.post("/jd/upload", response_model=DocumentUploadResponse)

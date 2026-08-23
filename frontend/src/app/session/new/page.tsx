@@ -35,6 +35,8 @@ export default function NewSessionPage() {
   
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<"jd" | "resume" | "review">("jd")
+  const [jdDocId, setJdDocId] = useState<string | null>(null)
+  const [resumeDocId, setResumeDocId] = useState<string | null>(null)
 
   const handleJDFileUpload = async (file: File) => {
     if (!file.type.match(/pdf|word|text/)) {
@@ -65,20 +67,21 @@ export default function NewSessionPage() {
     
     setLoading(true)
     try {
-      let jd: JobDescription
       if (jdFile) {
         const formData = new FormData()
         formData.append("file", jdFile.file)
         const response = await api.post("/documents/jd/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" }
         })
-        jd = response.data
+        console.log("JD upload response:", response.data)
+        setJdDocId(response.data.document_id)
       } else {
         const response = await api.post("/documents/jd/paste", {
           title: jdTitle || "Pasted Job Description",
           raw_text: jdText
         })
-        jd = response.data
+        console.log("JD paste response:", response.data)
+        setJdDocId(response.data.id)
       }
       
       setStep("resume")
@@ -98,19 +101,20 @@ export default function NewSessionPage() {
     
     setLoading(true)
     try {
-      let resume: Resume
       if (resumeFile) {
         const formData = new FormData()
         formData.append("file", resumeFile.file)
         const response = await api.post("/documents/resume/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" }
         })
-        resume = response.data
+        console.log("Resume upload response:", response.data)
+        setResumeDocId(response.data.document_id)
       } else {
         const response = await api.post("/documents/resume/paste", {
           raw_text: resumeText
         })
-        resume = response.data
+        console.log("Resume paste response:", response.data)
+        setResumeDocId(response.data.id)
       }
       
       setStep("review")
@@ -125,9 +129,15 @@ export default function NewSessionPage() {
   const handleCreateSession = async () => {
     setLoading(true)
     try {
+      console.log("Creating session with jdDocId:", jdDocId, "resumeDocId:", resumeDocId)
+      if (!jdDocId || !resumeDocId) {
+        toast({ title: "Error", description: "Please complete JD and Resume steps first", variant: "destructive" })
+        setLoading(false)
+        return
+      }
       const response = await api.post("/analysis/sessions", {
-        jd_id: jdFile?.id || "temp",
-        resume_id: resumeFile?.id || "temp"
+        jd_id: jdDocId,
+        resume_id: resumeDocId
       })
       
       // We need to get the actual IDs from the created documents

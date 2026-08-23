@@ -26,6 +26,20 @@ from app.core.config import settings
 router = APIRouter()
 
 
+async def get_current_user_dependency(
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    # Placeholder - in production, extract from JWT token
+    result = await db.execute(select(User).limit(1))
+    user = result.scalar_one_or_none()
+    if not user:
+        user = User(email="demo@example.com", hashed_password="demo", full_name="Demo User")
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+    return user
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     user_data: RegisterRequest,
@@ -73,17 +87,3 @@ async def get_current_user_info(
     current_user: User = Depends(get_current_user_dependency),
 ):
     return current_user
-
-
-async def get_current_user_dependency(
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    # Placeholder - in production, extract from JWT token
-    result = await db.execute(select(User).limit(1))
-    user = result.scalar_one_or_none()
-    if not user:
-        user = User(email="demo@example.com", hashed_password="demo", full_name="Demo User")
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-    return user
