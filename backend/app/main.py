@@ -17,9 +17,15 @@ structlog.configure(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    try:
+        await init_db()
+    except Exception as e:
+        print(f"Warning: Startup init_db issue: {e}")
     yield
-    await llm_service.close()
+    try:
+        await llm_service.close()
+    except Exception:
+        pass
 
 
 app = FastAPI(
