@@ -68,8 +68,8 @@ export function InterviewComplete({ interview, sessionId, onViewResults }: Inter
       <div className="max-w-lg w-full space-y-6 relative z-10">
         {/* Success Icon */}
         <div className="text-center animate-scale-in">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 shadow-2xl shadow-emerald-500/30 mb-4">
-            <Trophy className="h-10 w-10 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white text-black shadow-2xl shadow-white/20 mb-4">
+            <Trophy className="h-10 w-10 text-black" />
           </div>
           <h1 className="text-3xl font-bold text-white">Interview Complete!</h1>
           <p className="text-white/50 mt-2 text-sm">
@@ -84,19 +84,19 @@ export function InterviewComplete({ interview, sessionId, onViewResults }: Inter
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-3 rounded-xl bg-white/[0.03]">
                   <div className="flex items-center justify-center mb-2">
-                    <BarChart3 className="h-5 w-5 text-indigo-400" />
+                    <BarChart3 className="h-5 w-5 text-white" />
                   </div>
                   <p className="text-2xl font-bold text-white">{answeredQuestions.length}</p>
                   <p className="text-[11px] text-white/40 mt-0.5">
                     Answered
                     {skippedQuestions.length > 0 && (
-                      <span className="text-amber-400/60"> ({skippedQuestions.length} skipped)</span>
+                      <span className="text-white/60"> ({skippedQuestions.length} skipped)</span>
                     )}
                   </p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-white/[0.03]">
                   <div className="flex items-center justify-center mb-2">
-                    <Clock className="h-5 w-5 text-purple-400" />
+                    <Clock className="h-5 w-5 text-white" />
                   </div>
                   <p className="text-2xl font-bold text-white">
                     {totalDuration > 0 ? `${Math.ceil(totalDuration / 60)}m` : "--"}
@@ -105,7 +105,7 @@ export function InterviewComplete({ interview, sessionId, onViewResults }: Inter
                 </div>
                 <div className="text-center p-3 rounded-xl bg-white/[0.03]">
                   <div className="flex items-center justify-center mb-2">
-                    <Sparkles className="h-5 w-5 text-amber-400" />
+                    <Sparkles className="h-5 w-5 text-white" />
                   </div>
                   <p className="text-2xl font-bold text-white">
                     {levelNames[interview.current_level]}
@@ -124,7 +124,7 @@ export function InterviewComplete({ interview, sessionId, onViewResults }: Inter
                     {interview.topics_covered.map((topic) => (
                       <span
                         key={topic}
-                        className="text-[11px] text-white/50 bg-white/[0.04] px-2.5 py-1 rounded-md"
+                        className="text-[11px] text-white/50 bg-white/[0.04] px-2.5 py-1 rounded-md border border-white/10"
                       >
                         {topic.replace(/_/g, " ")}
                       </span>
@@ -142,7 +142,7 @@ export function InterviewComplete({ interview, sessionId, onViewResults }: Inter
             <Link href={`/session/${sessionId}/results`} className="block">
               <Button
                 size="lg"
-                className="w-full h-14 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-base font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all hover:scale-[1.02] cursor-pointer"
+                className="w-full h-14 bg-white text-black hover:bg-neutral-200 text-base font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all hover:scale-[1.02] cursor-pointer"
               >
                 <span className="flex items-center gap-2">
                   View Detailed Results
