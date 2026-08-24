@@ -62,18 +62,29 @@ async def create_analysis_session(
     return AnalysisSessionCreateResponse.model_validate(session)
 
 
-@router.get("/sessions", response_model=List[AnalysisSessionCreateResponse])
+from app.models.interview import Interview, InterviewQuestion
+
+
+@router.get("/sessions", response_model=List[AnalysisSessionResponse])
 async def list_sessions(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_dependency),
 ):
+    from sqlalchemy.orm import selectinload
     result = await db.execute(
         select(AnalysisSession)
+        .options(
+            selectinload(AnalysisSession.jd_analysis),
+            selectinload(AnalysisSession.resume_analysis),
+            selectinload(AnalysisSession.job_fit),
+            selectinload(AnalysisSession.interview).selectinload(Interview.questions).selectinload(InterviewQuestion.answer),
+            selectinload(AnalysisSession.interview).selectinload(Interview.evaluation),
+        )
         .where(AnalysisSession.user_id == current_user.id)
         .order_by(AnalysisSession.created_at.desc())
     )
     sessions = result.scalars().all()
-    return [AnalysisSessionCreateResponse.model_validate(s) for s in sessions]
+    return [AnalysisSessionResponse.model_validate(s) for s in sessions]
 
 
 @router.get("/sessions/{session_id}", response_model=AnalysisSessionResponse)
@@ -89,6 +100,8 @@ async def get_session(
             selectinload(AnalysisSession.jd_analysis),
             selectinload(AnalysisSession.resume_analysis),
             selectinload(AnalysisSession.job_fit),
+            selectinload(AnalysisSession.interview).selectinload(Interview.questions).selectinload(InterviewQuestion.answer),
+            selectinload(AnalysisSession.interview).selectinload(Interview.evaluation),
         )
         .where(
             AnalysisSession.id == session_id,

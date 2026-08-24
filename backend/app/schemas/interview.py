@@ -52,8 +52,9 @@ class InterviewQuestionResponse(BaseModel):
     order_index: int
     is_follow_up: bool
     parent_question_id: Optional[uuid.UUID] = None
+    generated_context: Optional[Dict[str, Any]] = None
     asked_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -77,7 +78,7 @@ class InterviewAnswerResponse(BaseModel):
     speaking_pace_wpm: Optional[float] = None
     long_pauses_count: int
     submitted_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -119,7 +120,7 @@ class InterviewEvaluationResponse(BaseModel):
     readiness_level: Optional[ReadinessLevel] = None
     readiness_score: Optional[int] = None
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -139,10 +140,34 @@ class InterviewResponse(BaseModel):
     strengths_confirmed: List[str]
     questions: List[InterviewQuestionResponse] = []
     evaluation: Optional[InterviewEvaluationResponse] = None
-    
+
     class Config:
         from_attributes = True
 
 
 class StartInterviewRequest(BaseModel):
     session_id: uuid.UUID
+
+
+class SkipQuestionRequest(BaseModel):
+    reason: Optional[str] = None
+
+
+class InterviewerIntroResponse(BaseModel):
+    greeting: str
+    interviewer_name: str
+    interviewer_title: str
+    focus_areas: List[str]
+    estimated_duration_minutes: int
+    tips: List[str]
+
+
+class CurrentQuestionResponse(BaseModel):
+    question: InterviewQuestionResponse
+    progress: float  # 0-100
+    questions_answered: int
+    questions_remaining: int
+    current_level: InterviewLevel
+    level_name: str
+    is_last_question: bool
+    interview_status: InterviewStatus

@@ -111,8 +111,10 @@ export interface JobFitAssessment {
   missing_weak: string[]
   methodology: string | null
   skill_match_details: Record<string, unknown> | null
+  formatted_summary?: string
   created_at: string
 }
+
 
 export type SessionStatus = "pending" | "processing" | "completed" | "failed"
 
@@ -228,4 +230,26 @@ export interface Interview {
 
 export interface StartInterviewRequest {
   session_id: string
+}
+
+export type InterviewPhase = "lobby" | "active" | "complete"
+
+export interface InterviewerIntro {
+  greeting: string
+  interviewer_name: string
+  interviewer_title: string
+  focus_areas: string[]
+  estimated_duration_minutes: number
+  tips: string[]
+}
+
+export interface CurrentQuestionContext {
+  question: InterviewQuestion
+  progress: number
+  questions_answered: number
+  questions_remaining: number
+  current_level: InterviewLevel
+  level_name: string
+  is_last_question: boolean
+  interview_status: InterviewStatus
 }

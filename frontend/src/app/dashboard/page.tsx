@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { LogOut, Plus, FileText, Search, Settings, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,6 +29,12 @@ export default function Dashboard() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchSessions()
+    }
+  }, [status])
 
   const handleSignOut = () => {
     signOut({ callbackUrl: "/" })

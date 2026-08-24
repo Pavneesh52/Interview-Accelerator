@@ -24,19 +24,67 @@ export default function ResultsPage() {
   const [interview, setInterview] = useState<Interview | null>(null)
   const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(null)
   const [loading, setLoading] = useState(true)
+  const [generatingEval, setGeneratingEval] = useState(false)
 
   const fetchResults = async () => {
+    setLoading(true)
     try {
+      // 1. Fetch session info
       const response = await api.get(`/analysis/sessions/${sessionId}`)
-      if (response.data.interview) {
-        setInterview(response.data.interview)
-        setEvaluation(response.data.interview.evaluation || null)
+      let interviewData: Interview | null = response.data.interview || null
+
+      // 2. Fallback to direct interview endpoint if not present in session response
+      if (!interviewData) {
+        try {
+          const intRes = await api.get(`/interviews/interviews/session/${sessionId}`)
+          interviewData = intRes.data as Interview
+        } catch {
+          // No interview found yet
+        }
+      }
+
+      if (interviewData) {
+        setInterview(interviewData)
+
+        if (interviewData.evaluation) {
+          setEvaluation(interviewData.evaluation)
+        } else if (interviewData.status === "completed" || (interviewData.questions && interviewData.questions.some(q => q.answer))) {
+          // Auto-trigger evaluation if interview has answers but no evaluation yet
+          setGeneratingEval(true)
+          try {
+            await api.post(`/interviews/interviews/${interviewData.id}/evaluate`)
+            const refRes = await api.get(`/interviews/interviews/${interviewData.id}`)
+            const updatedInt = refRes.data as Interview
+            setInterview(updatedInt)
+            setEvaluation(updatedInt.evaluation || null)
+          } catch (evalErr) {
+            console.error("Failed to generate evaluation:", evalErr)
+          } finally {
+            setGeneratingEval(false)
+          }
+        }
       }
     } catch (error) {
       toast({ title: "Error", description: "Failed to load results", variant: "destructive" })
-      router.push("/dashboard")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGenerateEvaluation = async () => {
+    if (!interview) return
+    setGeneratingEval(true)
+    try {
+      await api.post(`/interviews/interviews/${interview.id}/evaluate`)
+      const refRes = await api.get(`/interviews/interviews/${interview.id}`)
+      const updatedInt = refRes.data as Interview
+      setInterview(updatedInt)
+      setEvaluation(updatedInt.evaluation || null)
+      toast({ title: "Success", description: "Interview performance report generated!" })
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to generate performance report", variant: "destructive" })
+    } finally {
+      setGeneratingEval(false)
     }
   }
 
@@ -44,32 +92,60 @@ export default function ResultsPage() {
     fetchResults()
   }, [sessionId])
 
-  if (loading) {
+  if (loading || generatingEval) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground font-medium">
+          {generatingEval ? "Generating your detailed performance report..." : "Loading interview results..."}
+        </p>
       </div>
     )
   }
 
   if (!interview || !evaluation) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md text-center">
           <CardContent className="py-12">
             <AlertTriangle className="mx-auto h-12 w-12 text-yellow-600 mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Results Not Available</h2>
-            <p className="text-muted-foreground mb-6">Complete an interview to see your results.</p>
-            <Link href={`/session/${sessionId}/interview`}>
-              <Button>Start Interview</Button>
-            </Link>
+            <h2 className="text-2xl font-bold mb-2">
+              {interview ? "Evaluation Report Pending" : "Results Not Available"}
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              {interview
+                ? "Your interview session is saved. Click below to generate your detailed performance report."
+                : "Complete an interview to see your results."}
+            </p>
+            <div className="flex flex-col gap-3 justify-center">
+              {interview ? (
+                <Button onClick={handleGenerateEvaluation} disabled={generatingEval}>
+                  {generatingEval ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Brain className="mr-2 h-4 w-4" />}
+                  Generate Performance Report
+                </Button>
+              ) : (
+                <Link href={`/session/${sessionId}/interview`}>
+                  <Button>Start Interview</Button>
+                </Link>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
     )
   }
 
-  const competencyScores = [
+  const coreKeys = new Set([
+    "role_fit", "role_fit_score",
+    "technical_knowledge", "technical_knowledge_score",
+    "problem_solving", "problem_solving_score",
+    "communication", "communication_score",
+    "confidence", "confidence_score",
+    "depth_of_understanding", "depth_of_understanding_score",
+    "behavioral_fit", "behavioral_fit_score",
+  ])
+
+  const coreCompetencies = [
     { label: "Role Fit", score: evaluation.role_fit_score, icon: Target },
     { label: "Technical Knowledge", score: evaluation.technical_knowledge_score, icon: Brain },
     { label: "Problem Solving", score: evaluation.problem_solving_score, icon: Lightbulb },
@@ -78,6 +154,17 @@ export default function ResultsPage() {
     { label: "Depth of Understanding", score: evaluation.depth_of_understanding_score, icon: Brain },
     { label: "Behavioral Fit", score: evaluation.behavioral_fit_score, icon: Target },
   ].filter(c => c.score !== null && c.score !== undefined)
+
+  // Extra role-specific competencies if provided by evaluation service
+  const extraCompetencies = Object.entries(evaluation.competency_scores || {})
+    .filter(([key]) => !coreKeys.has(key.toLowerCase().replace(/\s+/g, "_")))
+    .map(([key, val]) => ({
+      label: key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+      score: val,
+      icon: Award,
+    }))
+
+  const competencyScores = [...coreCompetencies, ...extraCompetencies]
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,16 +187,16 @@ export default function ResultsPage() {
           <Link href="/dashboard" className="text-sm text-muted-foreground hover:underline mb-2 inline-block">
             ← Dashboard
           </Link>
-          <h1 className="text-3xl font-bold">Interview Results</h1>
-          <p className="text-muted-foreground">Your performance analysis and preparation plan</p>
+          <h1 className="text-3xl font-bold">Interview Performance Report</h1>
+          <p className="text-muted-foreground">Comprehensive evaluation and competency breakdown</p>
         </div>
 
         {/* Overall Score & Readiness */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card className="md:col-span-2">
             <CardHeader>
-              <CardTitle>Overall Score</CardTitle>
-              <CardDescription>{evaluation.overall_score}/100</CardDescription>
+              <CardTitle className="text-xl">Overall Interview Score: {evaluation.overall_score}/100</CardTitle>
+              <CardDescription>Aggregate performance rating across all questions & competencies</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center py-8">
               <div className="relative w-48 h-48 mb-4">
@@ -131,7 +218,7 @@ export default function ResultsPage() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-5xl font-bold">{evaluation.overall_score}</div>
-                    <div className="text-sm font-medium text-muted-foreground">out of 100</div>
+                    <div className="text-sm font-medium text-muted-foreground">/ 100</div>
                   </div>
                 </div>
               </div>

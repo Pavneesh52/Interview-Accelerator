@@ -88,10 +88,27 @@ class JobFitAssessmentResponse(BaseModel):
     missing_weak: List[str]
     methodology: Optional[str] = None
     skill_match_details: Optional[Dict[str, Any]] = None
+    formatted_summary: Optional[str] = None
     created_at: datetime
     
     class Config:
         from_attributes = True
+
+    @classmethod
+    def model_validate(cls, obj: Any, *args: Any, **kwargs: Any):
+        instance = super().model_validate(obj, *args, **kwargs)
+        lines = [f"Job Fit: {instance.score}%", instance.rating]
+        if instance.strong_matches:
+            lines.extend(instance.strong_matches)
+        lines.append("Partial Match")
+        if instance.partial_matches:
+            lines.extend(instance.partial_matches)
+        lines.append("Missing / Weak")
+        if instance.missing_weak:
+            lines.extend(instance.missing_weak)
+        instance.formatted_summary = "\n".join(lines)
+        return instance
+
 
 
 class SessionStatus(str, Enum):
@@ -99,6 +116,9 @@ class SessionStatus(str, Enum):
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
+
+
+from app.schemas.interview import InterviewResponse
 
 
 class AnalysisSessionResponse(BaseModel):
@@ -113,6 +133,7 @@ class AnalysisSessionResponse(BaseModel):
     jd_analysis: Optional[JDAnalysisResponse] = None
     resume_analysis: Optional[ResumeAnalysisResponse] = None
     job_fit: Optional[JobFitAssessmentResponse] = None
+    interview: Optional[InterviewResponse] = None
     
     class Config:
         from_attributes = True

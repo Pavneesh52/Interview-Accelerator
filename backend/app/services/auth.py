@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 import uuid
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -80,16 +80,36 @@ def decode_token(token: str) -> Optional[TokenData]:
 
 async def get_current_user_dependency(
     db: AsyncSession = Depends(get_db),
+    token: str = Depends(lambda: None),  # Will be overridden by actual dependency
 ) -> User:
-    # Placeholder - in production, extract from JWT token
+    # This is a placeholder that will be replaced by the actual dependency in the API routes
+    # The actual implementation is in the API routes where we can access the request headers
     result = await db.execute(select(User).limit(1))
     user = result.scalar_one_or_none()
     if not user:
-        # In services/auth.py, replace line 88: 
         hashed_password = get_password_hash("demo")
         user = User(email="demo@example.com", hashed_password=hashed_password, full_name="Demo User")
-
         db.add(user)
         await db.commit()
         await db.refresh(user)
+    return user
+
+
+async def get_current_user_from_token(
+    db: AsyncSession = Depends(get_db),
+    authorization: str = None,
+) -> User:
+    """Extract user from JWT token in Authorization header."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    
+    token = authorization.split(" ")[1]
+    token_data = decode_token(token)
+    if not token_data:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    user = await get_user_by_id(db, token_data.user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
     return user

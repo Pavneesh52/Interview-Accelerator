@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import timedelta
@@ -12,6 +12,8 @@ from app.services.auth import (
     get_user_by_id,
     verify_password,
     get_password_hash,
+    decode_token,
+    get_current_user_from_token,
 )
 from app.models.user import User
 from app.schemas.auth import (
@@ -28,16 +30,9 @@ router = APIRouter()
 
 async def get_current_user_dependency(
     db: AsyncSession = Depends(get_db),
+    authorization: str = Header(None),
 ) -> User:
-    # Placeholder - in production, extract from JWT token
-    result = await db.execute(select(User).limit(1))
-    user = result.scalar_one_or_none()
-    if not user:
-        user = User(email="demo@example.com", hashed_password="demo", full_name="Demo User")
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-    return user
+    return await get_current_user_from_token(db, authorization)
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

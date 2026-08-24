@@ -92,6 +92,21 @@ export default function AnalysisPage() {
                 Dashboard
               </Button>
             </Link>
+            {session.status === "completed" && (
+              <div className="flex items-center gap-2">
+                <Link href={`/session/${sessionId}/job-fit`}>
+                  <Button variant="outline" size="sm">
+                    Job Fit Assessment
+                  </Button>
+                </Link>
+                <Link href={`/session/${sessionId}/interview`}>
+                  <Button variant="default" size="sm" className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white">
+                    <Brain className="mr-2 h-4 w-4" />
+                    Start AI Interview
+                  </Button>
+                </Link>
+              </div>
+            )}
             {session.status !== "completed" && (
               <Button onClick={runAnalysis} disabled={analyzing} size="sm">
                 {analyzing ? (
@@ -323,6 +338,34 @@ export default function AnalysisPage() {
               </Card>
             </TabsContent>
           </Tabs>
+        )}
+
+        {session.status === "completed" && (
+          <Card className="mt-8 border-2 border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-2">
+                <div>
+                  <h3 className="text-xl font-bold">Ready for your Mock Interview?</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    AI has analyzed your resume against the job description. Start your personalized Level 1 Screening Interview now.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Link href={`/session/${sessionId}/job-fit`}>
+                    <Button variant="outline">
+                      View Job Fit Score
+                    </Button>
+                  </Link>
+                  <Link href={`/session/${sessionId}/interview`}>
+                    <Button size="lg" className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold shadow-lg">
+                      <Brain className="mr-2 h-5 w-5" />
+                      Start AI Interview
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {session.status !== "completed" && (
