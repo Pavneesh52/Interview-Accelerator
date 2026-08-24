@@ -227,14 +227,14 @@ export function CandidateResponse({ onSubmit, disabled, questionId }: CandidateR
                 disabled={disabled || submitting}
                 className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer ${
                   isRecording
-                    ? "bg-red-500 hover:bg-red-600 animate-mic-pulse shadow-xl shadow-red-500/25"
-                    : "bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105"
+                    ? "bg-neutral-100 text-black animate-mic-pulse shadow-xl shadow-white/20"
+                    : "bg-white hover:bg-neutral-200 text-black shadow-lg shadow-white/10 hover:shadow-xl hover:scale-105"
                 } disabled:opacity-50 disabled:hover:scale-100`}
               >
                 {isRecording ? (
-                  <MicOff className="h-8 w-8 text-white" />
+                  <MicOff className="h-8 w-8 text-black" />
                 ) : (
-                  <Mic className="h-8 w-8 text-white" />
+                  <Mic className="h-8 w-8 text-black" />
                 )}
               </button>
             </div>
@@ -243,8 +243,8 @@ export function CandidateResponse({ onSubmit, disabled, questionId }: CandidateR
             <div className="text-center mb-4">
               {isRecording ? (
                 <div className="space-y-1">
-                  <p className="text-red-400 text-sm font-medium flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                  <p className="text-neutral-200 text-sm font-medium flex items-center justify-center gap-2">
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                     Recording — {formatDuration(recordingDuration)}
                   </p>
                   <p className="text-white/30 text-xs">Click to stop</p>
@@ -298,11 +298,11 @@ export function CandidateResponse({ onSubmit, disabled, questionId }: CandidateR
               onClick={handleSubmit}
               disabled={!currentAnswer.trim() || disabled || submitting}
               size="sm"
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white h-9 px-5 rounded-xl shadow-lg disabled:opacity-40 disabled:shadow-none transition-all cursor-pointer"
+              className="bg-white text-black hover:bg-neutral-200 h-9 px-5 rounded-xl font-medium shadow-lg disabled:opacity-40 disabled:shadow-none transition-all cursor-pointer"
             >
               {submitting ? (
                 <span className="flex items-center gap-2">
-                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                   Submitting
                 </span>
               ) : (

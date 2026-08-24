@@ -100,7 +100,7 @@ export default function AnalysisPage() {
                   </Button>
                 </Link>
                 <Link href={`/session/${sessionId}/interview`}>
-                  <Button variant="default" size="sm" className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white">
+                  <Button variant="default" size="sm" className="bg-white text-black hover:bg-neutral-200 font-medium">
                     <Brain className="mr-2 h-4 w-4" />
                     Start AI Interview
                   </Button>
@@ -341,7 +341,7 @@ export default function AnalysisPage() {
         )}
 
         {session.status === "completed" && (
-          <Card className="mt-8 border-2 border-indigo-500/20 bg-gradient-to-r from-indigo-500/5 to-purple-500/5">
+          <Card className="mt-8 border border-white/15 bg-white/[0.03]">
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-2">
                 <div>
@@ -357,7 +357,7 @@ export default function AnalysisPage() {
                     </Button>
                   </Link>
                   <Link href={`/session/${sessionId}/interview`}>
-                    <Button size="lg" className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold shadow-lg">
+                    <Button size="lg" className="bg-white text-black hover:bg-neutral-200 font-semibold shadow-lg">
                       <Brain className="mr-2 h-5 w-5" />
                       Start AI Interview
                     </Button>

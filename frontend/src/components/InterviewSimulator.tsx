@@ -407,7 +407,7 @@ export function InterviewSimulator({ sessionId, onExit }: InterviewSimulatorProp
             <Button
               onClick={handlePause}
               size="lg"
-              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90 text-white px-8 rounded-xl shadow-xl cursor-pointer"
+              className="bg-white text-black hover:bg-neutral-200 font-medium px-8 rounded-xl shadow-xl cursor-pointer"
             >
               <Play className="h-5 w-5 mr-2" />
               Resume Interview

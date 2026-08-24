@@ -40,13 +40,7 @@ export function AIInterviewer({ question, isSpeaking, isThinking, interviewerNam
   }, [question?.question_text])
 
   const getLevelGradient = () => {
-    if (!question) return "from-indigo-500 to-purple-600"
-    switch (question.level) {
-      case 1: return "from-blue-500 to-indigo-600"
-      case 2: return "from-amber-500 to-orange-600"
-      case 3: return "from-red-500 to-rose-600"
-      default: return "from-indigo-500 to-purple-600"
-    }
+    return "bg-white text-black font-bold border border-white/30"
   }
 
   const getQuestionTypeLabel = (type: string) => {
@@ -62,12 +56,7 @@ export function AIInterviewer({ question, isSpeaking, isThinking, interviewerNam
   }
 
   const getDifficultyColor = (diff: string) => {
-    switch (diff) {
-      case "easy": return "text-emerald-400 bg-emerald-400/10 border-emerald-400/20"
-      case "medium": return "text-amber-400 bg-amber-400/10 border-amber-400/20"
-      case "hard": return "text-red-400 bg-red-400/10 border-red-400/20"
-      default: return "text-white/60 bg-white/5 border-white/10"
-    }
+    return "text-white bg-white/10 border-white/20 font-medium"
   }
 
   return (
@@ -76,7 +65,7 @@ export function AIInterviewer({ question, isSpeaking, isThinking, interviewerNam
       <div className="flex items-center gap-4 mb-6">
         <div className="relative">
           <div
-            className={`w-12 h-12 rounded-full bg-gradient-to-br ${getLevelGradient()} flex items-center justify-center text-white font-bold text-lg shadow-lg ${
+            className={`w-12 h-12 rounded-full bg-white text-black font-extrabold text-lg flex items-center justify-center shadow-lg ${
               isSpeaking ? "animate-avatar-speak" : ""
             }`}
           >
@@ -84,12 +73,12 @@ export function AIInterviewer({ question, isSpeaking, isThinking, interviewerNam
           </div>
           {/* Status Indicator */}
           <div
-            className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-[hsl(222.2,84%,4.9%)] ${
+            className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-black ${
               isThinking
-                ? "bg-amber-400 animate-pulse"
+                ? "bg-neutral-400 animate-pulse"
                 : isSpeaking
-                ? "bg-emerald-400"
-                : "bg-white/40"
+                ? "bg-white"
+                : "bg-neutral-600"
             }`}
           />
         </div>
@@ -106,7 +95,7 @@ export function AIInterviewer({ question, isSpeaking, isThinking, interviewerNam
             {[1, 2, 3, 2, 1, 3, 2].map((v, i) => (
               <div
                 key={i}
-                className={`w-[3px] bg-indigo-400 rounded-full ${
+                className={`w-[3px] bg-white rounded-full ${
                   v === 1 ? "animate-waveform-1" : v === 2 ? "animate-waveform-2" : "animate-waveform-3"
                 }`}
                 style={{ height: `${8 + v * 4}px` }}
@@ -122,9 +111,9 @@ export function AIInterviewer({ question, isSpeaking, isThinking, interviewerNam
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-4">
               <div className="flex justify-center gap-1.5">
-                <div className="w-2.5 h-2.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <div className="w-2.5 h-2.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-2.5 h-2.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div className="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-2.5 h-2.5 bg-white rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
               <p className="text-white/40 text-sm">Preparing your next question...</p>
             </div>
