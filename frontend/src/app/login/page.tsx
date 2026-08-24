@@ -15,7 +15,7 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
-  
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -26,7 +26,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    
+
     try {
       if (isRegister) {
         const response = await fetch("/api/auth/register", {
@@ -34,9 +34,9 @@ export default function LoginPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password, name }),
         })
-        
+
         if (!response.ok) throw new Error("Registration failed")
-        
+
         toast({ title: "Account created", description: "Please sign in" })
         setIsRegister(false)
         setName("")
@@ -47,7 +47,7 @@ export default function LoginPage() {
           redirect: false,
           callbackUrl,
         })
-        
+
         if (result?.error) {
           toast({ title: "Error", description: result.error, variant: "destructive" })
         } else {
@@ -68,8 +68,8 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{isRegister ? "Create Account" : "Sign In"}</CardTitle>
           <CardDescription>
-            {isRegister 
-              ? "Enter your details to create an account" 
+            {isRegister
+              ? "Enter your details to create an account"
               : "Enter your credentials to access your dashboard"}
           </CardDescription>
         </CardHeader>
@@ -87,7 +87,7 @@ export default function LoginPage() {
                 />
               </div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -104,7 +104,7 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
@@ -128,14 +128,14 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            
+
             <Button type="submit" className="w-full" disabled={loading} size="lg">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : isRegister ? "Create Account" : "Sign In"}
             </Button>
           </form>
-          
+
           <Separator className="my-6" />
-          
+
           <Button
             variant="outline"
             className="w-full"
@@ -144,10 +144,10 @@ export default function LoginPage() {
           >
             {isRegister ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
           </Button>
-          
-          <p className="text-center text-xs text-muted-foreground mt-4">
+
+          {/* <p className="text-center text-xs text-muted-foreground mt-4">
             Demo: demo@example.com / demo123
-          </p>
+          </p> */}
         </CardContent>
       </Card>
     </div>
